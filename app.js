@@ -248,9 +248,70 @@ function go(i){if(window.ADMIN_PAGE&&ADM_PAGES[i])location.href=ADM_PAGES[i];els
 function admOut(){adm=false;D.op('logout',{}).catch(()=>{}).then(()=>{try{sessionStorage.removeItem('rratk')}catch(e){}D.reauth()});admView()}
 const NAV={5:['📊','Dashboard'],0:['👥','Pemain'],6:['🗂','Pengguna'],4:['💬','Chat'],1:['🎨','Tampilan'],7:['🔑','Login & Daftar'],2:['⚙','Aturan'],3:['🔒','Keamanan'],8:['📝','Pendaftaran'],9:['🧾','Aktivitas'],10:['🖌','Desain']};
 const GRP=[['Ikhtisar',[5]],['Pengguna',[0,6,8,4]],['Konfigurasi',[1,10,7,2]],['Sistem',[9,3]]];
-function shell(body,T){const cnt={4:PL.reduce((s,p)=>s+unread(p.id,'a','a'+p.id),0),8:PL.filter(p=>p.pending).length},
-  nav=GRP.map(([g,ids])=>`<div class="ap-grp">${g}</div>`+ids.map(i=>{const t=`<span>${NAV[i][0]}</span>${NAV[i][1]}${cnt[i]?`<em class="nb">${cnt[i]}</em>`:''}`;return window.ADMIN_PAGE?`<a class="${i===tab?'on':''}" href="${ADM_PAGES[i]}">${t}</a>`:`<button class="${i===tab?'on':''}" onclick="tab=${i};admView()">${t}</button>`}).join('')).join(''),pn=cnt[8];
-  return`<div class="ap"><aside class="ap-side"><div class="ap-brand"><b>${esc(CF.title)}</b><small>Panel admin</small></div><nav>${nav}</nav><div class="ap-foot">${window.ADMIN_PAGE?'<a href="index.html" target="_blank" rel="noopener">Buka situs pemain</a>':'<button onclick="closeAdm()">Kembali ke situs</button>'}<button onclick="admOut()">Keluar</button></div></aside><div class="ap-scrim" onclick="document.querySelector('.ap-side').classList.remove('open')"></div><div class="ap-main"><header class="ap-top"><button class="ap-burger" aria-label="Buka menu" onclick="document.querySelector('.ap-side').classList.toggle('open')">☰</button><h1>${NAV[tab][1]}</h1><span class="pill ${SYNC?'g':''}">● ${SYNC?'Online':'Lokal'}</span><span class="pill">${PL.length} pengguna</span><span class="pill">Putaran ${RD.id}</span>${pn?`<button class="pill warnb" onclick="go(8)">📝 ${pn} menunggu</button>`:''}${CF.maint?'<span class="pill warnb">Mode pemeliharaan</span>':''}</header><div class="ap-body">${body}</div></div></div>`}
+const NAVCSS=`
+.ap-brand{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px 14px}
+.ap-brand .bt{display:flex;flex-direction:column;min-width:0}
+.ap-brand .bt b{font-size:1.05rem;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ap-brand .bt small{opacity:.6}
+.ap-col{background:none;border:1px solid #2a3150;color:#b8c0dc;border-radius:8px;padding:2px 9px;font-size:1rem;cursor:pointer}
+.ap-side nav{display:flex;flex-direction:column;gap:3px;flex:1}
+.ap-side nav a,.ap-side nav button,.ap-side .fl{position:relative;display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:10px;color:#b8c0dc;font-weight:600;font-size:.95rem;text-decoration:none;background:none;border:0;text-align:left;cursor:pointer}
+.ap-side nav a:hover,.ap-side nav button:hover,.ap-side .fl:hover{background:#171c32;color:#fff}
+.ap-side nav .on{background:#27315c;color:#fff;box-shadow:inset 3px 0 0 #5b8def}
+.ap-side nav a:focus-visible,.ap-side nav button:focus-visible,.ap-side .fl:focus-visible,.ap-col:focus-visible,.ap-burger:focus-visible{outline:2px solid #8fb1ff;outline-offset:-2px}
+.ap-side .ni{width:24px;text-align:center;font-size:1.1rem;flex:none}
+.ap-side .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ap-foot{display:flex;flex-direction:column;gap:3px;padding-top:10px;border-top:1px solid #1f2540}
+.ap-top{flex-wrap:nowrap;gap:10px}
+.crumb{display:flex;flex-direction:column;margin-right:auto;min-width:0}
+.crumb small{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:#6f7aa3}
+.crumb h1{margin:0;font-size:1.25rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0}
+.tb-out{display:none}
+@media(min-width:821px){
+ .ap{transition:grid-template-columns .2s}
+ .ap.col{grid-template-columns:72px minmax(0,1fr)}
+ .ap.col .ap-side{padding-left:8px;padding-right:8px}
+ .ap.col .ap-brand{flex-direction:column;padding-left:0;padding-right:0}
+ .ap.col .ap-brand .bt{display:none}
+ .ap.col .ap-col{transform:rotate(180deg)}
+ .ap.col .t{display:none}
+ .ap.col .ap-side nav a,.ap.col .ap-side nav button,.ap.col .ap-side .fl{justify-content:center;padding-left:0;padding-right:0}
+ .ap.col .nb{position:absolute;top:2px;right:4px;margin:0;padding:0 5px;font-size:.6rem}
+ .ap.col .ap-grp{font-size:0;height:1px;background:#1f2540;margin:10px 6px;padding:0}
+}
+@media(max-width:820px){
+ .ap{grid-template-columns:1fr}
+ .ap-side{position:fixed;left:0;top:0;bottom:0;width:min(300px,86vw);height:100vh;height:100dvh;transform:translateX(-102%);transition:transform .22s;z-index:70;overflow-y:auto;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+ .ap-side.open{transform:none;box-shadow:0 0 60px #000}
+ .ap-side nav{flex-direction:column;overflow:visible;flex:1}
+ .ap-grp{display:block}
+ .ap-burger{display:inline-flex;align-items:center}
+ .ap-col{display:none}
+ .ap-side.open+.ap-scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:65}
+ .ap-top{padding:10px 14px;gap:8px}
+ .ap-top .pill:not(.warnb){display:none}
+ .tb-out{display:inline-flex}
+}
+html.navopen,html.navopen body{overflow:hidden}
+`;
+function injectNavCss(){
+  if(document.getElementById('navcss'))return;
+  const s=document.createElement('style');s.id='navcss';s.textContent=NAVCSS;document.head.appendChild(s);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')navClose()});
+  addEventListener('resize',()=>{if(innerWidth>820)navClose()});
+}
+function navCollapsed(){try{const p=localStorage.getItem('rrnav');if(p!==null)return p==='1'}catch(e){}return innerWidth<1100}
+function navToggle(){const ap=document.querySelector('.ap');if(!ap)return;const c=ap.classList.toggle('col');try{localStorage.setItem('rrnav',c?'1':'0')}catch(e){}}
+function navOpen(){const s=document.getElementById('apside');if(!s)return;s.classList.add('open');document.documentElement.classList.add('navopen');const b=document.getElementById('apburger');if(b)b.setAttribute('aria-expanded','true');const a=s.querySelector('nav .on');if(a)s.scrollTop=Math.max(0,a.offsetTop-s.clientHeight/2)}
+function navClose(){const s=document.getElementById('apside');if(s)s.classList.remove('open');document.documentElement.classList.remove('navopen');const b=document.getElementById('apburger');if(b)b.setAttribute('aria-expanded','false')}
+function shell(body,T){injectNavCss();
+  const cnt={4:PL.reduce((s,p)=>s+unread(p.id,'a','a'+p.id),0),8:PL.filter(p=>p.pending).length},col=navCollapsed(),pn=cnt[8],
+  item=i=>{const lab=NAV[i][1],inner=`<span class="ni" aria-hidden="true">${NAV[i][0]}</span><span class="t">${lab}</span>${cnt[i]?`<em class="nb">${cnt[i]}</em>`:''}`,cur=i===tab?' aria-current="page"':'';
+    return window.ADMIN_PAGE?`<a class="${i===tab?'on':''}" href="${ADM_PAGES[i]}" title="${lab}"${cur}>${inner}</a>`:`<button class="${i===tab?'on':''}" onclick="tab=${i};admView();navClose()" title="${lab}"${cur}>${inner}</button>`},
+  nav=GRP.map(([g,ids])=>`<div class="ap-grp">${g}</div>`+ids.map(item).join('')).join(''),
+  site=window.ADMIN_PAGE?'<a class="fl" href="index.html" target="_blank" rel="noopener" title="Situs pemain"><span class="ni" aria-hidden="true">🌐</span><span class="t">Situs pemain</span></a>':'<button class="fl" onclick="closeAdm()" title="Kembali ke situs"><span class="ni" aria-hidden="true">🌐</span><span class="t">Kembali ke situs</span></button>';
+  setTimeout(()=>{const s=document.getElementById('apside'),a=s&&s.querySelector('nav .on');if(s&&a&&s.scrollHeight>s.clientHeight)s.scrollTop=Math.max(0,a.offsetTop-s.clientHeight/2)},0);
+  return`<div class="ap${col?' col':''}"><aside class="ap-side" id="apside"><div class="ap-brand"><div class="bt"><b>${esc(CF.title)}</b><small>Panel admin</small></div><button class="ap-col" aria-label="Ciutkan atau lebarkan menu" title="Ciutkan atau lebarkan menu" onclick="navToggle()">«</button></div><nav aria-label="Menu admin">${nav}</nav><div class="ap-foot">${site}<button class="fl" onclick="admOut()" title="Keluar"><span class="ni" aria-hidden="true">🚪</span><span class="t">Keluar</span></button></div></aside><div class="ap-scrim" onclick="navClose()"></div><div class="ap-main"><header class="ap-top"><button class="ap-burger" id="apburger" aria-label="Buka menu" aria-expanded="false" aria-controls="apside" onclick="navOpen()">☰</button><div class="crumb"><small>Panel admin</small><h1>${NAV[tab][0]} ${NAV[tab][1]}</h1></div><span class="pill ${SYNC?'g':''}">● ${SYNC?'Online':'Lokal'}</span><span class="pill">${PL.length} pengguna</span><span class="pill">Putaran ${RD.id}</span>${pn?`<button class="pill warnb" onclick="go(8)">📝 ${pn} menunggu</button>`:''}${CF.maint?'<span class="pill warnb">Mode pemeliharaan</span>':''}<button class="tb-out" onclick="admOut()" aria-label="Keluar">Keluar</button></header><div class="ap-body">${body}</div></div></div>`}
 let LG=[],lgq='',lgArm=false;
 function alog(m){if(!D)return;W('logs/'+uid(),{t:Date.now(),m},true)}
 function regChart(){const days=[...Array(7)].map((_,i)=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6+i);return d.getTime()}),c=days.map(t=>PL.filter(p=>p.created>=t&&p.created<t+864e5).length),m=Math.max(1,...c);
