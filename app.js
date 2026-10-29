@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
-const ORDER=[0,16,11,5,24,21,6,9,17,14,2,3,22,19,10,7,13,23,4,12,15,1,20,18,8];
-const REDS=new Set([1,3,5,7,9,12,14,16,18,19,21,23]);
-const col=n=>n===0?'#0d7a3f':REDS.has(n)?'#c0182b':'#161616';
+const ORDER=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
+const REDS=new Set([1,2,3,4,9,10,11,12,17,18,19,20]);
+const col=n=>REDS.has(n)?'#c8102e':'#141414';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Number(n).toLocaleString('id-ID');
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -42,7 +42,7 @@ function apiDB(){
   const col=p=>({doc:id=>doc(p+'/'+id),onSnapshot(cb){let o;const n=p.split('/').length+1,f=()=>{if(!loaded)return;const ks=Object.keys(cache).filter(k=>k.startsWith(p+'/')&&k.split('/').length===n).sort(),s=JSON.stringify(ks.map(k=>cache[k]));if(s!==o){o=s;cb({docs:ks.map(k=>sn(k,cl(cache[k])))})}};subs.push(f);setTimeout(f,0);return()=>{}}});
   return{doc,collection:col,serverNow:()=>Date.now()+off,cmd:t=>op({t}),op:(t,d)=>op({t,...d}),reauth:()=>{reset=true;cursor=0;loaded=false;kick()},role:()=>role,rid:()=>rid,fast:on=>{fastMs=on?2000:0;plan()}}}
 
-const DEF={title:'Royal Roulette',sub:'Pasang chip, putar roda, dan lihat siapa yang beruntung.',acc:'#f5c542',bg1:'#3b0a1e',bg2:'#0b0612',felt:'#0a5c36',pn:24,pc:1,pd:2,reg:true,font:'klasik',rad:18,wsz:340,lay:'side',pat:'1',sec:30,rd:3,ms:6000,chips:[10,50,100,500],start:1000,foot:'Permainan hiburan dengan chip virtual.',appr:false,invite:'',maxp:0,minb:0,maxb:0,maint:false,maintMsg:'Permainan sedang ditutup sementara untuk pemeliharaan.',lgTitle:'Akun pemain',lgIntro:'',lgIn:'Masuk',lgUp:'Daftar',lgUser:'Username',lgPass:'Password',lgName:'Nama lengkap',lgPhone:'Nomor telepon',lgEmail:'Email',lgContactOn:true,lgContact:'Kontak atau HP (opsional)',lgBtnIn:'Masuk',lgBtnUp:'Buat akun',lgTerms:'',lgHelp:'Lupa password? Minta admin untuk membuatkan yang baru.',lgWelcome:'Akun dibuat. Selamat bermain!',lgSt:'box',logo:'🎰',showSub:true,heroOn:false,heroT:'',heroX:'',bgm:'grad',bgimg:'',cardSt:'glass',btnSt:'round',chipSt:'gold',w3:true,fxOn:true,fs:100,links:'',css:''};
+const DEF={title:'Royal Roulette',sub:'Pasang chip, putar roda, dan lihat siapa yang beruntung.',acc:'#f5c542',bg1:'#3b0a1e',bg2:'#0b0612',felt:'#0a5c36',pn:23,pc:1,pd:2,reg:true,font:'klasik',rad:18,wsz:340,lay:'side',pat:'1',sec:30,rd:3,ms:6000,chips:[10,50,100,500],start:1000,foot:'Permainan hiburan dengan chip virtual.',appr:false,invite:'',maxp:0,minb:0,maxb:0,maint:false,maintMsg:'Permainan sedang ditutup sementara untuk pemeliharaan.',lgTitle:'Akun pemain',lgIntro:'',lgIn:'Masuk',lgUp:'Daftar',lgUser:'Username',lgPass:'Password',lgName:'Nama lengkap',lgPhone:'Nomor telepon',lgEmail:'Email',lgContactOn:true,lgContact:'Kontak atau HP (opsional)',lgBtnIn:'Masuk',lgBtnUp:'Buat akun',lgTerms:'',lgHelp:'Lupa password? Minta admin untuk membuatkan yang baru.',lgWelcome:'Akun dibuat. Selamat bermain!',lgSt:'box',logo:'🎰',showSub:true,heroOn:false,heroT:'',heroX:'',bgm:'grad',bgimg:'',cardSt:'glass',btnSt:'round',chipSt:'gold',w3:true,fxOn:true,fs:100,links:'',css:''};
 let D,SYNC=false,CF={...DEF},APW='',PL=[],RD={id:0,n:0,h:[],ms:6000};
 let me=null,act=null,chip=10,spinning=false,adm=false,tab=(window.ADMIN_TAB===undefined?5:window.ADMIN_TAB),rot=0,mode='in',lastPw=null,delId=null,rsArm=false,left=30,phase='',rvId=0,W3on=false,W3ok=false,closed=false,retry=0,seen=-1,cfgOk=false,plOk=false,akey='',creating=false;
 const P=id=>PL.find(p=>p.id===id);
@@ -67,13 +67,18 @@ function theme(){const r=document.documentElement.style,c=CF,f=FONTS[c.font]||FO
   const hr=$('hero');hr.hidden=!(c.heroOn&&(c.heroT||c.heroX));hr.innerHTML='<b>'+esc(c.heroT||'')+'</b>'+esc(c.heroX||'');
   let st=$('ccss');if(!st){st=document.createElement('style');st.id='ccss';document.head.appendChild(st)}st.textContent=ad?'':String(c.css||'');
   document.title=c.title;drawWheel()}
-function drawWheel(){if(W3on)W3.setAccent(CF.acc);const x=$('wheel').getContext('2d'),C=180,seg=2*Math.PI/25;x.clearRect(0,0,360,360);
-  ORDER.forEach((n,i)=>{const a=-Math.PI/2+i*seg;x.beginPath();x.moveTo(C,C);x.arc(C,C,172,a,a+seg);x.closePath();x.fillStyle=col(n);x.fill();x.strokeStyle=CF.acc;x.lineWidth=1;x.stroke();
-    x.save();x.translate(C,C);x.rotate(a+seg/2);x.fillStyle='#fff';x.font='bold 15px Figtree,sans-serif';x.textAlign='center';x.fillText(n,138,5);x.restore()});
-  x.beginPath();x.arc(C,C,108,0,7);x.fillStyle='#1c1220';x.fill();x.lineWidth=5;x.strokeStyle=CF.acc;x.stroke();
-  const g=x.createRadialGradient(C-8,C-8,2,C,C,28);g.addColorStop(0,'#fff');g.addColorStop(.4,CF.acc);g.addColorStop(1,'#000');x.beginPath();x.arc(C,C,26,0,7);x.fillStyle=g;x.fill();
-  x.beginPath();x.arc(C,C,172,0,7);x.lineWidth=4;x.strokeStyle='#ffffff55';x.stroke()}
-const resHTML=n=>`<b style="background:${col(n)};box-shadow:0 0 30px ${col(n)}">${n}</b><div class="note">${n===0?'Hijau, nol':(REDS.has(n)?'Merah':'Hitam')+', '+(n%2?'ganjil':'genap')}</div>`;
+const shade=(h,p)=>{const n=parseInt(h.slice(1),16),f=v=>Math.max(0,Math.min(255,Math.round(v*(1+p))));return'rgb('+f(n>>16)+','+f(n>>8&255)+','+f(n&255)+')'};
+function drawWheel(){if(W3on)W3.setAccent(CF.acc);const x=$('wheel').getContext('2d'),C=180,n=ORDER.length,seg=2*Math.PI/n,A=CF.acc;x.clearRect(0,0,360,360);
+  let g=x.createRadialGradient(C,C,150,C,C,178);g.addColorStop(0,'#5a3418');g.addColorStop(.55,'#2b140a');g.addColorStop(1,'#120804');x.beginPath();x.arc(C,C,178,0,7);x.fillStyle=g;x.fill();
+  g=x.createRadialGradient(C,C,128,C,C,160);g.addColorStop(0,'#0c0910');g.addColorStop(1,'#2a232f');x.beginPath();x.arc(C,C,158,0,7);x.fillStyle=g;x.fill();
+  ORDER.forEach((v,i)=>{const a=-Math.PI/2+i*seg,gg=x.createRadialGradient(C,C,40,C,C,128),b=col(v);gg.addColorStop(0,shade(b,-.4));gg.addColorStop(1,b);x.beginPath();x.moveTo(C,C);x.arc(C,C,128,a,a+seg);x.closePath();x.fillStyle=gg;x.fill();
+    x.save();x.translate(C,C);x.rotate(a+seg/2);x.fillStyle='#f6e7b0';x.font='bold 13px Figtree,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(v,104,1);x.restore()});
+  x.strokeStyle=A;x.lineWidth=2;ORDER.forEach((v,i)=>{const a=-Math.PI/2+i*seg;x.beginPath();x.moveTo(C+46*Math.cos(a),C+46*Math.sin(a));x.lineTo(C+128*Math.cos(a),C+128*Math.sin(a));x.stroke()});
+  x.beginPath();x.arc(C,C,128,0,7);x.lineWidth=4;x.stroke();x.beginPath();x.arc(C,C,160,0,7);x.lineWidth=5;x.stroke();
+  g=x.createRadialGradient(C-10,C-10,4,C,C,52);g.addColorStop(0,'#fff');g.addColorStop(.35,A);g.addColorStop(1,'#2a1a05');x.beginPath();x.arc(C,C,46,0,7);x.fillStyle=g;x.fill();
+  [0,1,2,3].forEach(k=>{const a=k*Math.PI/2+Math.PI/4,px=C+40*Math.cos(a),py=C+40*Math.sin(a);x.beginPath();x.moveTo(C,C);x.lineTo(px,py);x.lineWidth=5;x.strokeStyle='#e9d9a8';x.stroke();x.beginPath();x.arc(px,py,5,0,7);x.fillStyle=A;x.fill()});
+  x.beginPath();x.arc(C,C,12,0,7);x.fillStyle='#fff';x.fill()}
+const resHTML=n=>`<b style="background:${col(n)};box-shadow:0 0 30px ${col(n)}">${n}</b><div class="note">${(REDS.has(n)?'Merah':'Hitam')+', '+(n%2?'ganjil':'genap')}</div>`;
 
 function balView(){const p=P(act),b=$('bal');
   if(!p){b.className='out';b.innerHTML='<a class="btn" href="login.html">Masuk</a>'+(CF.reg?'<a class="btn gold" href="daftar.html">Daftar</a>':'');return}b.className='';
@@ -92,14 +97,14 @@ function renderPlayers(){balView();
     return`<button class="pl ${p.id===act?'on':''}" onclick="pick('${p.id}')"><span class="nm"><i class="av">${esc((p.name[0]||'?').toUpperCase())}</i><span>${p.ph?'🔒 ':''}${esc(p.name)}<small>${b?'Taruhan: '+fmt(b):'Ketuk untuk memilih'}</small></span></span><span class="c">${fmt(p.chips)} chip</span></button>`}).join(''):'<p class="note">Masuk atau daftar akun untuk mulai bermain.</p>';
   $('chipsel').innerHTML=CF.chips.map(v=>`<button class="chipb ${v===chip?'on':''}" onclick="chip=${v};renderPlayers()">${v}</button>`).join('')}
 function renderTable(){const mine=(P(act)||{}).bets||[],tot=k=>mine.filter(b=>b.k===k).reduce((s,b)=>s+b.a,0),bd=k=>tot(k)?`<i>${fmt(tot(k))}</i>`:'';
-  let h=`<button class="cell z" onclick="bet('n0')">0${bd('n0')}</button>`;
+  let h='';
   for(let r=0;r<8;r++)for(let c=1;c<=3;c++){const n=r*3+c;h+=`<button class="cell ${REDS.has(n)?'r':'k'}" onclick="bet('n${n}')">${n}${bd('n'+n)}</button>`}
   $('nums').innerHTML=h;
   const o=[['d1','1–8'],['d2','9–16'],['d3','17–24'],['low','1–12'],['even','Genap'],['red','Merah'],['black','Hitam'],['odd','Ganjil'],['high','13–24']];
   $('outs').innerHTML=o.map(([k,t])=>`<button class="cell" onclick="bet('${k}')">${t}${bd(k)}</button>`).join('')}
-function renderHist(){const h=hv(),cl=n=>n===0?'Hijau, nol':(REDS.has(n)?'Merah':'Hitam')+', '+(n%2?'ganjil':'genap');
+function renderHist(){const h=hv(),cl=n=>(REDS.has(n)?'Merah':'Hitam')+', '+(n%2?'ganjil':'genap');
   $('hist').innerHTML=h.slice(0,30).map(n=>`<span style="background:${col(n)}">${n}</span>`).join('')||'<span class="note" style="width:auto">Belum ada putaran.</span>';
-  const r=h.filter(x=>REDS.has(x)).length,z=h.filter(x=>x===0).length;$('hstat').textContent=h.length?`${h.length} putaran terakhir: merah ${r}, hitam ${h.length-r-z}, nol ${z}.`:'';
+  const r=h.filter(x=>REDS.has(x)).length,z=0;$('hstat').textContent=h.length?`${h.length} putaran terakhir: merah ${r}, hitam ${h.length-r-z}.`:'';
   $('hrows').innerHTML=h.slice(0,30).map((n,i)=>`<div class="hr"><i style="background:${col(n)}">${n}</i><span>${cl(n)}</span><small>Putaran ${Math.max(0,rvId-i)}</small></div>`).join('');
   $('log').innerHTML=((P(act)||{}).log||[]).map(l=>`<li class="${l.d>=0?'win':'lose'}">${esc(l.t)}</li>`).join('')||'<li class="note">Belum ada riwayat.</li>'}
 function cdView(){$('cdt').textContent=!cfgOk?'Menghubungkan…':spinning?(phase==='wait'?'Menunggu hasil…':'Roda berputar…'):closed?'Taruhan ditutup. Menunggu roda…':CF.paused?'Putaran dijeda admin':'Taruhan ditutup dalam '+left+' dtk';$('cdb').style.width=(spinning||closed||!cfgOk?0:100*left/SEC())+'%'}
@@ -107,8 +112,7 @@ function render(){chatView();cdView();acctView();renderPlayers();renderTable();r
 
 /* ---------- Taruhan ---------- */
 function pick(id){if(me&&id!==me)return toast('Keluar dulu untuk ganti akun');act=id;render()}
-function wins(k,n){if(k[0]==='n')return +k.slice(1)===n;if(n===0)return false;
-  return{red:REDS.has(n),black:!REDS.has(n),even:n%2===0,odd:n%2===1,low:n<=12,high:n>=13,d1:n<=8,d2:n>8&&n<=16,d3:n>16}[k]}
+function wins(k,n){if(k[0]==='n')return +k.slice(1)===n;return{red:REDS.has(n),black:!REDS.has(n),even:n%2===0,odd:n%2===1,low:n<=12,high:n>=13,d1:n<=8,d2:n>8&&n<=16,d3:n>16}[k]}
 const mult=k=>k[0]==='n'?CF.pn:k[0]==='d'?CF.pd:CF.pc;
 function bet(k){if(spinning||closed)return toast('Taruhan ditutup. Tunggu hitungan berikutnya.');settle();const p=P(act);if(!p)return toast('Pilih pemain dulu');if(p.blocked)return toast('Akun diblokir. Hubungi admin.');if(p.pending)return toast('Akun menunggu persetujuan admin.');if(CF.maint)return toast(CF.maintMsg||'Permainan sedang ditutup sementara.');if(CF.minb&&chip<CF.minb)return toast('Taruhan minimal '+fmt(CF.minb)+' chip.');if(CF.maxb&&(((p.bets||[]).find(b=>b.k===k)||{a:0}).a+chip)>CF.maxb)return toast('Batas taruhan per pilihan: '+fmt(CF.maxb)+' chip.');if(p.chips<chip)return toast('Chip '+p.name+' tidak cukup');
   const bs=(p.bets||[]).map(b=>({...b})),e=bs.find(b=>b.k===k);e?e.a+=chip:bs.push({k,a:chip});wp(p,{chips:p.chips-chip,bets:bs,tgt:RD.id+1});render()}
@@ -125,10 +129,10 @@ function settle(){if(window.CF_MODE||spinning)return;const p=P(act);if(!p||!(p.b
 /* ---------- Putaran sinkron ---------- */
 const rdMs=()=>Math.min(30,Math.max(0,+CF.rd||0))*1000;
 const hv=()=>RD.h.slice(Math.max(0,RD.id-rvId));
-function place(n){if(n===undefined)return;if(W3on){W3.place(n);return}const i=ORDER.indexOf(n),seg=360/25,w=$('wheel');rot=(360-(i+.5)*seg)%360;w.style.transition='none';w.style.transform=`rotate(${rot}deg)`}
+function place(n){if(n===undefined)return;if(W3on){W3.place(n);return}const i=ORDER.indexOf(n),seg=360/24,w=$('wheel');rot=(360-(i+.5)*seg)%360;w.style.transition='none';w.style.transform=`rotate(${rot}deg)`}
 function showLast(){if(!RD.h.length)return;place(RD.h[0]);$('res').innerHTML=resHTML(RD.h[0])}
 function reveal(r){phase='';rvId=r.id;spinning=false;closed=false;left=Math.max(0,Math.ceil(((RD.next||0)-SNOW())/1000));const p=P(act),bs=(p&&p.bets)||[];let net=0;if(bs.length&&p.tgt&&p.tgt<=r.id)bs.forEach(b=>{net+=wins(b.k,r.n)?b.a*mult(b.k):-b.a});$('res').innerHTML=resHTML(r.n)+(bs.length?`<div class="net ${net>=0?'win':'lose'}">${net>=0?'Menang ':'Kalah '}${net>=0?'+':''}${fmt(net)} chip</div>`:'');if(bs.length){if(net>0){confetti();winSound()}else if(net<0)loseSound()}settle();render()}
-function startSpin(r){spinning=true;phase='spin';const i=ORDER.indexOf(r.n),seg=360/25,des=(360-(i+.5)*seg)%360;rot=Math.ceil(rot/360)*360+5*360+des;
+function startSpin(r){spinning=true;phase='spin';const i=ORDER.indexOf(r.n),seg=360/24,des=(360-(i+.5)*seg)%360;rot=Math.ceil(rot/360)*360+5*360+des;
   if(W3on)W3.spin(r.n,r.ms);else{const w=$('wheel');w.style.transition=`transform ${r.ms}ms cubic-bezier(.12,.6,.1,1)`;w.style.transform=`rotate(${rot}deg)`}spinSound(r.ms);$('res').innerHTML='<span class="note">Roda berputar…</span>';render();
   setTimeout(()=>{phase='wait';$('res').innerHTML='<span class="note">Roda berhenti. Menunggu hasil…</span>';cdView();setTimeout(()=>reveal(r),rdMs())},r.ms+150)}
 const SNOW=()=>D&&D.serverNow?D.serverNow():Date.now();
@@ -205,13 +209,13 @@ const dd=t=>t?new Date(t).toLocaleDateString('id-ID',{day:'2-digit',month:'short
 const dt=t=>t?new Date(t).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'}):'-';
 const sg=n=>(n>=0?'+':'')+fmt(n);
 function dashTab(){const h=hv(),now=Date.now(),sum=f=>PL.reduce((s,p)=>s+f(p),0),tc=sum(p=>p.chips),tw=sum(p=>p.tw||0),tn=sum(p=>p.tn||0),pend=sum(p=>(p.bets||[]).reduce((a,b)=>a+b.a,0)),ap=PL.filter(p=>(p.bets||[]).length).length,
-  on=PL.filter(p=>p.seen&&now-p.seen<9e5).length,nw=PL.filter(p=>p.created&&now-p.created<864e5).length,bl=PL.filter(p=>p.blocked).length,cnt=Array(25).fill(0);h.forEach(x=>cnt[x]++);
-  const mx=Math.max(1,...cnt),bars=cnt.map((c,i)=>`<rect x="${i*22+4}" y="${96-c/mx*84}" width="16" height="${c/mx*84}" rx="3" fill="${i&&!REDS.has(i)?'#7b86a8':col(i)}"/><text x="${i*22+12}" y="110" font-size="9" text-anchor="middle" fill="#9aa3c4">${i}</text>`).join(''),
+  on=PL.filter(p=>p.seen&&now-p.seen<9e5).length,nw=PL.filter(p=>p.created&&now-p.created<864e5).length,bl=PL.filter(p=>p.blocked).length,cnt=Array(24).fill(0);h.forEach(x=>{if(x>=1&&x<=24)cnt[x-1]++});
+  const mx=Math.max(1,...cnt),bars=cnt.map((c,j)=>{const i=j+1;return `<rect x="${j*23+4}" y="${96-c/mx*84}" width="17" height="${c/mx*84}" rx="3" fill="${REDS.has(i)?'#c8102e':'#7b86a8'}"/><text x="${j*23+12}" y="110" font-size="9" text-anchor="middle" fill="#9aa3c4">${i}</text>`}).join(''),
   top=PL.slice().sort((a,b)=>b.chips-a.chips).slice(0,6),tm=Math.max(1,...top.map(p=>p.chips)),
-  tb=top.map(p=>`<div class="hb"><span>${esc(p.name)}</span><i style="width:${Math.max(2,p.chips/tm*100)}%"></i><b>${fmt(p.chips)}</b></div>`).join('')||'<p class="note">Belum ada pemain.</p>',rc=h.filter(x=>REDS.has(x)).length,zc=h.filter(x=>x===0).length;
+  tb=top.map(p=>`<div class="hb"><span>${esc(p.name)}</span><i style="width:${Math.max(2,p.chips/tm*100)}%"></i><b>${fmt(p.chips)}</b></div>`).join('')||'<p class="note">Belum ada pemain.</p>',rc=h.filter(x=>REDS.has(x)).length,zc=0;
   return`<div class="stats">${kpi('Total pengguna',PL.length,bl+' diblokir')}${kpi('Aktif 15 menit',on)}${kpi('Baru 24 jam',nw,PL.filter(p=>p.pending).length+' menunggu')}${kpi('Chip beredar',fmt(tc))}${kpi('Total taruhan',fmt(tw))}${kpi('Hasil kasino',sg(-tn),'selisih chip pemain')}${kpi('Taruhan terpasang',fmt(pend),ap+' pemain')}${kpi('Putaran ke '+RD.id,CF.paused?'Dijeda':spinning?'Berputar':closed?'Ditutup':left+' dtk','status taruhan')}</div>
   <div class="row" style="margin-top:14px"><button class="gold" onclick="spinNow()">Putar sekarang</button><button onclick="togglePause()">${CF.paused?'Lanjutkan putaran otomatis':'Jeda putaran otomatis'}</button></div>
-  <div class="grid2"><div class="panelbox"><h3>Distribusi angka (${h.length} putaran terakhir)</h3><svg viewBox="0 0 556 118" style="width:100%;height:auto" role="img" aria-label="Grafik distribusi angka">${bars}</svg><div class="note">Merah ${rc}, Hitam ${h.length-rc-zc}, Nol ${zc}</div></div><div class="panelbox"><h3>Chip terbanyak</h3>${tb}</div></div>
+  <div class="grid2"><div class="panelbox"><h3>Distribusi angka (${h.length} putaran terakhir)</h3><svg viewBox="0 0 556 118" style="width:100%;height:auto" role="img" aria-label="Grafik distribusi angka">${bars}</svg><div class="note">Merah ${rc}, Hitam ${h.length-rc-zc}</div></div><div class="panelbox"><h3>Chip terbanyak</h3>${tb}</div></div>
   ${quickPanel()}${expoPanel()}${regChart()}<div class="panelbox" style="margin-top:14px"><h3>Pengumuman untuk semua pemain</h3><div class="row"><input type="text" id="ntc" maxlength="140" value="${esc(CF.notice||'')}" placeholder="Contoh: Bonus chip dibagikan jam 8 malam"><button class="gold" onclick="cf('notice',$('ntc').value.trim(),'text');toast('Pengumuman diperbarui')">Tampilkan</button><button onclick="cf('notice','','text');admView()">Hapus</button></div></div>
   <div class="panelbox" style="margin-top:14px"><h3>Hasil terakhir</h3><div class="hist">${h.slice(0,30).map(x=>`<span style="background:${col(x)}">${x}</span>`).join('')||'<span class="note" style="width:auto">Belum ada putaran.</span>'}</div></div>`}
 let uq='',uf='all',us='new',upg=0,udet=null;
@@ -342,8 +346,8 @@ function confetti(){const c=$('fx');if(!c||CF.fxOn===false||(window.matchMedia&&
 function autoTick(){if(!autoRep||spinning||closed||CF.maint||CF.paused||lastAuto===RD.id)return;const p=P(act);if(!p||p.blocked||p.pending||!p.last||!p.last.length||(p.bets||[]).length)return;
   lastAuto=RD.id;const n=p.last.reduce((s,b)=>s+b.a,0);if(p.chips<n){autoRep=false;$('auto').setAttribute('aria-pressed','false');toast('Auto ulang dihentikan: chip tidak cukup');return}repeatBets()}
 function expoPanel(){const B={};let tot=0;PL.forEach(p=>(p.bets||[]).forEach(b=>{B[b.k]=(B[b.k]||0)+b.a;tot+=b.a}));
-  const net=[...Array(25).keys()].map(n=>{let g=0;Object.keys(B).forEach(k=>{if(wins(k,n))g+=B[k]*(mult(k)+1)});return tot-g}),mx=Math.max(1,...net.map(Math.abs)),
-  bars=net.map((v,i)=>`<rect x="${i*22+4}" y="${v>=0?50-v/mx*44:50}" width="16" height="${Math.max(1,Math.abs(v)/mx*44)}" rx="2" fill="${v>=0?'#4cd37b':'#ff6b6b'}"/><text x="${i*22+12}" y="112" font-size="9" text-anchor="middle" fill="#9aa3c4">${i}</text>`).join(''),
+  const net=[...Array(24).keys()].map(k=>{const n=k+1;let g=0;Object.keys(B).forEach(k=>{if(wins(k,n))g+=B[k]*(mult(k)+1)});return tot-g}),mx=Math.max(1,...net.map(Math.abs)),
+  bars=net.map((v,i)=>`<rect x="${i*23+4}" y="${v>=0?50-v/mx*44:50}" width="16" height="${Math.max(1,Math.abs(v)/mx*44)}" rx="2" fill="${v>=0?'#4cd37b':'#ff6b6b'}"/><text x="${i*23+12}" y="112" font-size="9" text-anchor="middle" fill="#9aa3c4">${i+1}</text>`).join(''),
   lab=k=>k[0]==='n'?'Angka '+k.slice(1):({red:'Merah',black:'Hitam',even:'Genap',odd:'Ganjil',low:'1-12',high:'13-24',d1:'1-8',d2:'9-16',d3:'17-24'})[k]||k,mb=Math.max(1,...Object.values(B)),
   top=Object.entries(B).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`<div class="hb"><span>${lab(k)}</span><i style="width:${Math.max(2,v/mb*100)}%"></i><b>${fmt(v)}</b></div>`).join('')||'<p class="note">Belum ada taruhan terpasang.</p>';
   return`<div class="panelbox" style="margin-top:14px"><h3>Eksposur putaran berikutnya</h3><div class="note">Total terpasang ${fmt(tot)} chip. Hijau: kasino untung jika angka itu keluar, merah: rugi. Terburuk ${sg(Math.min(0,...net))}, terbaik ${sg(Math.max(0,...net))}.</div><svg viewBox="0 0 556 118" style="width:100%;height:auto" role="img" aria-label="Eksposur per angka"><line x1="0" x2="556" y1="50" y2="50" stroke="#2a3150"/>${bars}</svg>${top}</div>`}
