@@ -1,7 +1,7 @@
 /* Roda roulette 3D realistis (Three.js r128): mangkuk kayu, jalur bola miring, sekat krom, turret dan gagang emas,
    pantulan lingkungan, bayangan lembut. Roda 24 kantong (1-24). Jika WebGL tidak tersedia, tampilan 2D dipakai. */
 (function(){
-const ORDER=Array.from({length:24},(_,i)=>i+1),REDS=new Set([1,2,3,4,9,10,11,12,17,18,19,20]),N=24,TAU=Math.PI*2,SEG=TAU/N;
+const ORDER=[18,9,4,22,11,2,24,15,7,20,13,5,1,12,19,23,10,8,21,14,6,3,16,17],REDS=new Set([1,4,6,7,10,11,13,16,18,19,21,24]),N=24,TAU=Math.PI*2,SEG=TAU/N;
 let R,S,C,wheel,ball,host,anim=null;const gold=[];
 const colOf=n=>REDS.has(n)?0xb3121f:0x141414;
 const thetaFor=i=>Math.PI/2-(i+.5)*SEG;
